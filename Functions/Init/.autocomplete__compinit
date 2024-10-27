@@ -109,82 +109,82 @@ EOF
     MENUSCROLL=0
   }
 
-  _expand() {
-    local word=$words[CURRENT]
-    [[ $word == (|*[^\\])\`?*\`* || $word == (|*[^\\])'$('*')'* ]] &&
-        return 1
-
-    local special=${(j:|:)${(kb)parameters[(R)*-special]}}
-    [[
-        $word == *'$'($~special)(|[^[:alnum:]]*) ||
-        $word == *'$'($~special)(:[/:[:alnum:]]*)#(|[^[:alnum:]]*) ||
-        $word == *'${'(|\(?*\))[^_[:alnum:]]#($~special)(:?*)#'}'*
-    ]] &&
-        return 1
-
-    local expansion
-
-    expansion="${(b)$( eval print -r -- $word )}" 2> /dev/null ||
-        return 1
-    [[ $expansion == $word ]] &&
-        return 1
-
-    local -a expl
-    _description expansions expl expansion
-    compadd -QU "$expl[@]" -- $expansion
-    return 1
-  }
-
-  .autocomplete__patch _complete
-  _complete() {
-    local -i nmatches=$compstate[nmatches]
-
-    PREFIX=$PREFIX$SUFFIX
-    SUFFIX=
-    autocomplete:_complete:old "$@"
-
-    # WORKAROUND: Some completion functions mistakenly don't return 0 when they have succeeded.
-    (( compstate[nmatches] > nmatches ))
-  }
-
-
-  ##
-  # WORKAROUND: _approximate won't do corrections if there already is a function called 'compadd'.
+  # _expand() {
+  #   local word=$words[CURRENT]
+  #   [[ $word == (|*[^\\])\`?*\`* || $word == (|*[^\\])'$('*')'* ]] &&
+  #       return 1
   #
-
-  .autocomplete__patch _approximate
-  _approximate() {
-    {
-      [[ -v functions[compadd] ]] &&
-          functions[autocomplete:compadd:old]="$functions[compadd]"
-      functions[compadd]="$functions[autocomplete:approximate:compadd]"
-
-      autocomplete:_approximate:old
-    } always {
-      unfunction compadd 2> /dev/null
-      if [[ -v functions[autocomplete:compadd:old] ]]; then
-        functions[compadd]="$functions[autocomplete:compadd:old]"
-        unfunction autocomplete:compadd:old
-      fi
-    }
-  }
-
-  autocomplete:approximate:compadd() {
-    local ppre="$argv[(I)-p]"
-
-    [[ ${argv[(I)-[a-zA-Z]#U[a-zA-Z]#]} -eq 0 &&
-       "${#:-$PREFIX$SUFFIX}" -le _comp_correct ]] && return
-
-    if [[ "$PREFIX" = \~* && ( ppre -eq 0 || "$argv[ppre+1]" != \~* ) ]]; then
-      PREFIX="~(#a${_comp_correct})${PREFIX[2,-1]}"
-    else
-      PREFIX="(#a${_comp_correct})$PREFIX"
-    fi
-
-    if [[ -v functions[autocomplete:compadd:old] ]]; then
-      autocomplete:compadd:old "$@"
-    else
-      builtin compadd "$@"
-    fi
-  }
+  #   local special=${(j:|:)${(kb)parameters[(R)*-special]}}
+  #   [[
+  #       $word == *'$'($~special)(|[^[:alnum:]]*) ||
+  #       $word == *'$'($~special)(:[/:[:alnum:]]*)#(|[^[:alnum:]]*) ||
+  #       $word == *'${'(|\(?*\))[^_[:alnum:]]#($~special)(:?*)#'}'*
+  #   ]] &&
+  #       return 1
+  #
+  #   local expansion
+  #
+  #   expansion="${(b)$( eval print -r -- $word )}" 2> /dev/null ||
+  #       return 1
+  #   [[ $expansion == $word ]] &&
+  #       return 1
+  #
+  #   local -a expl
+  #   _description expansions expl expansion
+  #   compadd -QU "$expl[@]" -- $expansion
+  #   return 1
+  # }
+  #
+  # .autocomplete__patch _complete
+  # _complete() {
+  #   local -i nmatches=$compstate[nmatches]
+  #
+  #   PREFIX=$PREFIX$SUFFIX
+  #   SUFFIX=
+  #   autocomplete:_complete:old "$@"
+  #
+  #   # WORKAROUND: Some completion functions mistakenly don't return 0 when they have succeeded.
+  #   (( compstate[nmatches] > nmatches ))
+  # }
+  #
+  #
+  # ##
+  # # WORKAROUND: _approximate won't do corrections if there already is a function called 'compadd'.
+  # #
+  #
+  # .autocomplete__patch _approximate
+  # _approximate() {
+  #   {
+  #     [[ -v functions[compadd] ]] &&
+  #         functions[autocomplete:compadd:old]="$functions[compadd]"
+  #     functions[compadd]="$functions[autocomplete:approximate:compadd]"
+  #
+  #     autocomplete:_approximate:old
+  #   } always {
+  #     unfunction compadd 2> /dev/null
+  #     if [[ -v functions[autocomplete:compadd:old] ]]; then
+  #       functions[compadd]="$functions[autocomplete:compadd:old]"
+  #       unfunction autocomplete:compadd:old
+  #     fi
+  #   }
+  # }
+  #
+  # autocomplete:approximate:compadd() {
+  #   local ppre="$argv[(I)-p]"
+  #
+  #   [[ ${argv[(I)-[a-zA-Z]#U[a-zA-Z]#]} -eq 0 &&
+  #      "${#:-$PREFIX$SUFFIX}" -le _comp_correct ]] && return
+  #
+  #   if [[ "$PREFIX" = \~* && ( ppre -eq 0 || "$argv[ppre+1]" != \~* ) ]]; then
+  #     PREFIX="~(#a${_comp_correct})${PREFIX[2,-1]}"
+  #   else
+  #     PREFIX="(#a${_comp_correct})$PREFIX"
+  #   fi
+  #
+  #   if [[ -v functions[autocomplete:compadd:old] ]]; then
+  #     autocomplete:compadd:old "$@"
+  #   else
+  #     builtin compadd "$@"
+  #   fi
+  # }
 }
