@@ -22,6 +22,7 @@ fi
     if [[ $WIDGETSTYLE == (|*-)menu(|-*) ]]; then
       compstate[insert]='automenu-'
     fi
+    compstate[to_end]=
     compstate[insert]+='unambiguous'
     unset _autocomplete__unambiguous
 

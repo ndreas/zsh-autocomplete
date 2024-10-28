@@ -140,6 +140,13 @@ ${0}:precmd() {
       unset POSTDISPLAY
     fi
 
+    if [[ $_lastcomp[insert] == *unambiguous ]]; then
+      local -a nolast=()
+      is-at-least 5.9 &&
+          nolast=( -f nolast )
+      builtin zle .auto-suffix-retain $nolast  # Make the cursor stay in the right place.
+    fi
+
     .autocomplete:async:wait
   }
 
